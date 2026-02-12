@@ -59,7 +59,7 @@ export const purchasePlan = async(req,res)=>{
 
     //create stripe session
 
-    const origin = req.get("origin");
+    const {origin} = req.headers;
 
 
     const session = await stripe.checkout.sessions.create({
