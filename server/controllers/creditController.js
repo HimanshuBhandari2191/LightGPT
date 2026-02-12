@@ -35,7 +35,7 @@ export const getPlans = async(req,res) =>{
     }
 }
 
-const stripe = new Stripe(process.env.SECRET_KEY)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 //API controller to buy a plan
 
 export const purchasePlan = async(req,res)=>{
