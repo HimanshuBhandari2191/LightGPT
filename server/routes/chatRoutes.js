@@ -6,7 +6,7 @@
 
  chatRouter.get('/create',protect,createChat)
  chatRouter.get('/get',protect,getChat)
- chatRouter.delete('/delete',protect,deleteChat)
+ chatRouter.post('/delete',protect,deleteChat)
 
  export default chatRouter;
 
