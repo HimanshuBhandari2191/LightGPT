@@ -16,7 +16,7 @@ export const stripeWebhooks = async(request,response)=>{
 
     try{
         switch(event.type){
-            case "payment_intent.succeeded":{
+            case "checkout.session.completed":{
                 const paymentIntent = event.data.object
                 const sessionList = await stripe.checkout.sessions.list({
                     payment_intent: paymentIntent.id,
@@ -24,7 +24,7 @@ export const stripeWebhooks = async(request,response)=>{
                 const session = sessionList.data[0]
                 const {transactionId, appId} = session.metadata
 
-                if(appId === 'lightgpt'){
+                if(appId === "lightgpt"){
                     const transaction = await Transaction.findOne({_id: transactionId,
                     isPaid: false})
 
