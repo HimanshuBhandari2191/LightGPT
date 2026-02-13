@@ -1,64 +1,110 @@
-import User from '../models/user.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import Chat from '../models/chat.js';
-//genertae JWT
+import User from "../models/user.js"
+import jwt from "jsonwebtoken"
+import bcrypt from "bcryptjs"
+import Chat from "../models/chat.js"
 
-const generateToken = (id) =>{
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '30d'});
+// generate token
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+        expiresIn: "30d",
+    })
 }
 
-//API to register a user
+// register user
+export const registerUser = async (req, res) => {
+    const { name, email, password } = req.body
 
-export const registerUser = async (req,res) =>{
-    const {name ,email,password}=req.body;
-    try{
-        const userExists = await User.findOne({email})
-        if(userExists){
-            return res.status(400).json({success: false,message: "User already exists"});
+    try {
+        const existingUser = await User.findOne({ email })
+        if (existingUser) {
+            return res.status(400).json({ 
+                success: false, 
+                error: true, 
+                message: "User already exists" 
+            })
         }
 
-        const user = await User.create({name,email,password});
-
-        const token = generateToken(user._id);
-        res.json({success: true, token})
-    }catch(error){
-        return res.json({success: false, message:error.message})
+        const user = await User.create({ name, email, password })
+        const token = generateToken(user._id)
+        res.status(201).json({ 
+            success: true, 
+            error: false, 
+            message: "User registered successfully", 
+            token
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ 
+            success: false, 
+            error: true, 
+            message: error.message 
+        })
     }
 }
 
-//API to login a user
-export const loginUser = async (req,res) =>{
-    const{email,password}=req.body;
-    try{
-        const user = await User.findOne({email})
-        if(user){
-            const isMatch = await bcrypt.compare(password, user.password)
-            if(isMatch){
-                const token = generateToken(user._id)
-            return res.json({success:true, token})          }
+// login user
+export const loginUser = async (req, res) => {
+    const { email, password } = req.body
+
+    try {
+        const user = await User.findOne({ email })
+        if (!user) {
+            return res.status(400).json({ 
+                success: false, 
+                error: true, 
+                message: "User does not exist" 
+            })
         }
-        return res.json({success:false, message:"Invalid credentials"})
-    }catch(error){
-        return res.json({success:false,message:error.message})
+
+        const isMatch = await bcrypt.compare(password, user.password)
+        if (!isMatch) {
+            return res.status(400).json({ 
+                success: false, 
+                error: true, 
+                message: "Invalid password" 
+            })
+        }
+
+        const token = generateToken(user._id)
+        res.status(200).json({ 
+            success: true, 
+            error: false, 
+            message: "User logged in successfully", 
+            token
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ 
+            success: false, 
+            error: true, 
+            message: error.message 
+        })
     }
 }
 
-//API to get user data
-export const getUserData = async (req,res) =>{
-    try{
+// get user data
+export const getUserData = async (req, res) => {
+    try {
         const user = req.user
-        return res.json({success:true, user})
-    }catch(error){
-        return res.json({success:false,message:error.message})
+        res.status(200).json({ 
+            success: true, 
+            error: false, 
+            message: "User data fetched successfully", 
+            user
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ 
+            success: false, 
+            error: true, 
+            message: error.message 
+        })
     }
 }
-
-//API to get published images
 
 export const getPublishedImages = async(req,res) =>{
     try{
-        const publishedImages = await Chat.aggregate([
+        const publishedImage = await Chat.aggregate([
             {$unwind: "$messages"},
             {$match: {
                 "messages.isImage": true,
@@ -73,7 +119,7 @@ export const getPublishedImages = async(req,res) =>{
             }
         ])
 
-        res.json({success:true, images: publishedImageMessages.reverse()})
+        res.json({success:true, images: publishedImage.reverse()})
     }catch(error){
         res.json({success:false, message:error.message})
     }
