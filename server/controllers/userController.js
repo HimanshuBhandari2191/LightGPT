@@ -5,7 +5,7 @@ import Chat from "../models/chat.js"
 
 // generate token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET_KEY, {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: "30d",
     })
 }
