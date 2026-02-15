@@ -82,6 +82,6 @@ export const imageMessageController = async(req,res)=>{
         await User.updateOne({_id:userId},{$inc : {credits: -2}})
 
     }catch(error){
-        res.json({success:false, message:error.message})
+        res.json({success:false, message:"Api limit reached for image generation, try again later till then you can use text-based chat for free"})
     }
 }
